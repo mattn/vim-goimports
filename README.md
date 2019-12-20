@@ -1,8 +1,18 @@
 # vim-goimports
 
-Just for auto-formatting with :w
+Vim plugin for Minimalist Gopher
+
+## Features
+
+* Auto-formatting with `:w`
+* GoImport/GoImportAs
 
 This plugin is mostly based on vim-go.
+
+## Will not do
+
+* Add new commands
+* Modify syntax
 
 ## Usage
 
@@ -17,11 +27,6 @@ For [vim-plug](https://github.com/junegunn/vim-plug) plugin manager:
 ```viml
 Plug 'mattn/vim-goimports'
 ```
-
-## Will not do
-
-* Add new commands
-* Modify syntax 
 
 ## License
 
