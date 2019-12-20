@@ -18,6 +18,11 @@ For [vim-plug](https://github.com/junegunn/vim-plug) plugin manager:
 Plug 'mattn/vim-goimports'
 ```
 
+## Will not do
+
+* Add new commands
+* Modify syntax 
+
 ## License
 
 MIT
