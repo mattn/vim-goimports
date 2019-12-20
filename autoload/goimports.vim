@@ -92,7 +92,7 @@ let [s:goos, s:goarch] = split(system('go env GOOS GOARCH'), "\n")
 function! goimports#Complete(lead, cmdline, pos) abort
   let l:dirs = []
   let l:ret = {}
-  for dir in s:dirs
+  for l:dir in s:dirs
     let l:root = split(expand(l:dir . '/pkg/' . s:goos . '_' . s:goarch), "\n")
     call add(l:root, expand(l:dir . '/src'))
     for l:r in l:root
@@ -103,7 +103,7 @@ function! goimports#Complete(lead, cmdline, pos) abort
           continue
         endif
         let l:e = substitute(substitute(l:e[len(l:r)+1:], '[\\]', '/', 'g'), '\.a$', '', 'g')
-        let ret[l:e] = 1
+        let l:ret[l:e] = 1
       endfor
     endfor
   endfor
