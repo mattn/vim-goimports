@@ -28,6 +28,10 @@ For [vim-plug](https://github.com/junegunn/vim-plug) plugin manager:
 Plug 'mattn/vim-goimports'
 ```
 
+## Requirements
+
+* goimports
+
 ## License
 
 MIT
