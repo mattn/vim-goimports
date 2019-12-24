@@ -1,4 +1,8 @@
 function! goimports#Run() abort
+  if !executable('goimports')
+    call s:error('goimports executable not found')
+    return
+  endif
   let l:view = winsaveview()
   let l:tmpname = tempname() . '.go'
   call writefile(s:getlines(), l:tmpname)
