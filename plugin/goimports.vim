@@ -1,3 +1,11 @@
+if !executable('goimports')
+  echohl ErrorMsg
+  echomsg "vim-goimports: 'goimports' command is not found. please install it."
+  echomsg 'vim-goimports: e.g.) go get golang.org/x/tools/cmd/goimports'
+  echohl None
+  finish
+endif
+
 function! s:install()
   augroup goimports_autoformat
     au!
