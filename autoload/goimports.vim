@@ -1,3 +1,5 @@
+" vint: -ProhibitUnusedVariable
+
 function! goimports#Run() abort
   if !executable('goimports')
     call s:error('goimports executable not found')
@@ -15,7 +17,7 @@ function! goimports#Run() abort
   if l:err == 0
     call s:rename_file(l:tmpname, expand('%'))
   else
-    call s:handle_errors(expand('%'), out)
+    call s:handle_errors(expand('%'), l:out)
   endif
   call delete(l:tmpname)
   call winrestview(l:view)
@@ -58,15 +60,15 @@ function! s:handle_errors(filename, content) abort
   let l:lines = split(a:content, '\n')
   let l:errors = []
   for l:line in l:lines
-    let tokens = matchlist(l:line, '^\(.\{-}\):\(\d\+\):\(\d\+\)\s*\(.*\)')
-    if empty(tokens)
+    let l:tokens = matchlist(l:line, '^\(.\{-}\):\(\d\+\):\(\d\+\)\s*\(.*\)')
+    if empty(l:tokens)
       continue
     endif
     call add(l:errors,{
           \'filename': a:filename,
-          \'lnum':     tokens[2],
-          \'col':      tokens[3],
-          \'text':     tokens[4],
+          \'lnum':     l:tokens[2],
+          \'col':      l:tokens[3],
+          \'text':     l:tokens[4],
           \ })
   endfor
 
@@ -94,7 +96,6 @@ let s:dirs = split(system('go env GOROOT GOPATH'), "\n")
 let [s:goos, s:goarch] = split(system('go env GOOS GOARCH'), "\n")
 
 function! goimports#Complete(lead, cmdline, pos) abort
-  let l:dirs = []
   let l:ret = {}
   for l:dir in s:dirs
     let l:root = split(expand(l:dir . '/pkg/' . s:goos . '_' . s:goarch), "\n")
@@ -138,7 +139,7 @@ function! goimports#SwitchImport(enabled, localname, path, bang) abort
 
   if a:bang == '!'
     let [l:out, l:err] = system(printf('go get -u -v %s', shellescape(l:path)))
-    if err != 0
+    if l:err != 0
       call s:error('Can''t find import: ' . l:path . ':' . l:out)
     endif
   endif
@@ -178,7 +179,6 @@ function! goimports#SwitchImport(enabled, localname, path, bang) abort
       let l:indentstr = 1
       let l:appendline = l:line
       let l:firstblank = -1
-      let l:lastprefix = ''
       while l:line <= line('$')
         let l:line = l:line + 1
         let l:linestr = getline(l:line)
@@ -201,7 +201,6 @@ function! goimports#SwitchImport(enabled, localname, path, bang) abort
           endif
           break
         endif
-        let l:lastprefix = matchstr(l:m[4], '^[^/]*/')
         if a:localname != '' && l:m[3] != ''
           let l:qlocalpath = printf('%-' . (len(l:m[3])-1) . 's %s', a:localname, l:qpath)
         endif
