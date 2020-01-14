@@ -138,8 +138,8 @@ function! goimports#SwitchImport(enabled, localname, path, bang) abort
   endif
 
   if a:bang == '!'
-    let [l:out, l:err] = system(printf('go get -u -v %s', shellescape(l:path)))
-    if l:err != 0
+    let l:out = system(printf('go get -u -v %s', shellescape(l:path)))
+    if v:shell_error != 0
       call s:error('Can''t find import: ' . l:path . ':' . l:out)
     endif
   endif
