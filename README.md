@@ -28,6 +28,15 @@ For [vim-plug](https://github.com/junegunn/vim-plug) plugin manager:
 Plug 'mattn/vim-goimports'
 ```
 
+## Configuration
+
+```viml
+" enable (default)
+let g:goimports = 1
+" disable
+let g:goimports = 0
+```
+
 ## Requirements
 
 * goimports
