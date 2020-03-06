@@ -1,6 +1,9 @@
 " vint: -ProhibitUnusedVariable
 
 function! goimports#Run() abort
+  if !get(g:, 'goimports', 1)
+    return
+  endif
   if !executable('goimports')
     call s:error('goimports executable not found')
     return
