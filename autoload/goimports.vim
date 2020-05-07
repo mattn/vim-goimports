@@ -8,53 +8,27 @@ function! goimports#Run() abort
     call s:error('goimports executable not found')
     return
   endif
+  let l:curpos = getcurpos()
   let l:view = winsaveview()
-  let l:tmpname = tempname() . '.go'
-  call writefile(s:getlines(), l:tmpname)
-  if has('win32')
-    let l:tmpname = tr(l:tmpname, '\', '/')
-  endif
-  let l:col = col('.')
-  let [l:out, l:err] = s:goimports(l:tmpname, expand('%'))
-  let l:linecount = len(readfile(l:tmpname)) - line('$')
-  if l:err == 0
-    call s:rename_file(l:tmpname, expand('%'))
-  else
+  let [l:out, l:err] = s:goimports()
+  if l:err != 0
     call s:handle_errors(expand('%'), l:out)
+    return
   endif
-  call delete(l:tmpname)
+  call s:reset_errors()
+  if empty(l:out)
+    return
+  endif
+  let l:curpos[1] = s:apply_diff(l:out, l:curpos[1])
   call winrestview(l:view)
-  call cursor(line('.') + l:linecount, l:col)
+  call setpos('.', l:curpos)
   syntax sync fromstart
 endfunction
 
-function! s:rename_file(src, dst)
-  try | silent undojoin | catch | endtry
-
-  let l:old_fileformat = &fileformat
-  let l:old_fperm = getfperm(a:dst)
-
-  call rename(a:src, a:dst)
-
-  if l:old_fperm != ''
-    call setfperm(a:dst , l:old_fperm)
-  endif
-
-  silent edit!
-
-  let &fileformat = l:old_fileformat
-  let &syntax = &syntax
-
-  let l:title = getloclist(0, {'title': 1})
-  if has_key(l:title, 'title') && l:title['title'] ==# 'Format'
-    lex []
-    lclose
-  endif
-endfunction
-
-function! s:goimports(src, dst)
-  let l:cmd = printf('goimports -w -srcdir %s %s', shellescape(a:dst), shellescape(a:src))
-  let l:out = system(l:cmd)
+function! s:goimports()
+  let l:file = expand('%')
+  let l:cmd = printf('goimports -d -srcdir %s', shellescape(l:file))
+  let l:out = system(l:cmd, join(s:getlines(), "\n"))
   let l:err = v:shell_error
   return [l:out, l:err]
 endfunction
@@ -84,13 +58,56 @@ function! s:handle_errors(filename, content) abort
   endif
 endfunction
 
+function! s:reset_errors() abort
+  let l:title = getloclist(0, {'title': 1})
+  if has_key(l:title, 'title') && l:title['title'] ==# 'Format'
+    lexpr []
+    lclose
+  endif
+endfunction
+
+function! s:apply_diff(diff, lnum) abort
+  let l:bufnr = bufnr('%')
+  let l:last_lnum = line('$')
+  let l:cursor_lnum = a:lnum
+  let l:hunks = split(a:diff, "\n@@")
+  for l:hunk in l:hunks[1 :]
+    let l:lines = split(l:hunk, "\n")
+    let l:header = remove(l:lines, 0)
+    let l:current_lnum = str2nr(matchstr(l:header, '+\zs\d\+'))
+    for l:line in l:lines
+      if l:line[0] is# '-'
+        call deletebufline(l:bufnr, l:current_lnum)
+        let l:last_lnum -= 1
+        if l:current_lnum < l:cursor_lnum
+          let l:cursor_lnum -= 1
+        endif
+      elseif l:line[0] is# '+'
+        let l:append_lnum = min([l:current_lnum - 1, l:last_lnum])
+        call appendbufline(l:bufnr, l:append_lnum, l:line[1 :])
+        let l:last_lnum += 1
+        if l:current_lnum < l:cursor_lnum
+          let l:cursor_lnum += 1
+        endif
+        let l:current_lnum += 1
+      else
+        let l:current_lnum += 1
+      endif
+    endfor
+  endfor
+  return l:cursor_lnum
+endfunction
+
 function! s:getlines()
   let l:buf = getline(1, '$')
   if &encoding !=# 'utf-8'
-    let l:buf = map(l:buf, 'iconv(v:val, &encoding, "utf-8")')
+    call map(l:buf, 'iconv(v:val, &encoding, "utf-8")')
+  endif
+  if &l:endofline || (&l:fixendofline && !&l:binary)
+    call add(l:buf, '')
   endif
   if &l:fileformat ==# 'dos'
-    let l:buf = map(l:buf, 'v:val."\r"')
+    call map(l:buf, 'v:val."\r"')
   endif
   return l:buf
 endfunction
