@@ -37,9 +37,20 @@ let g:goimports = 1
 let g:goimports = 0
 ```
 
+* `g:goimports_simplify` - make simplify (a.k.a. `gofmt -s`) in formatting,
+  when make value of this `1` (default disabled).
+
+    ```viml
+    " enable simplify filter
+    let g:goimports_simplify = 1
+    " disable simplify filter
+    unlet! g:goimports_simplify
+    ```
+
 ## Requirements
 
 * goimports
+* gofmt (optional: for `g:goimports_simplify = 1`)
 
 ## License
 
