@@ -12,20 +12,31 @@ function! goimports#Run() abort
     call s:error('goimports executable not found')
     return
   endif
+
   let l:curpos = getcurpos()
   let l:view = winsaveview()
-  let [l:out, l:err] = s:goimports()
-  if l:err != 0
-    call s:handle_errors(expand('%'), l:out)
-    return
+
+  let l:filters = ['s:goimports']
+  if get(g:, 'goimports_simplify', 0)
+    let l:filters += ['s:gofmt_s']
   endif
-  call s:reset_errors()
-  if empty(l:out)
-    return
-  endif
-  let l:curpos[1] = s:apply_diff(l:out, l:curpos[1])
+
+  for f in l:filters
+    let [l:out, l:err] = function(f)()
+    if l:err != 0
+      call s:handle_errors(expand('%'), l:out)
+      return
+    endif
+    call s:reset_errors()
+    if empty(l:out)
+      return
+    endif
+    let l:curpos[1] = s:apply_diff(l:out, l:curpos[1])
+  endfor
+
   call winrestview(l:view)
   call setpos('.', l:curpos)
+
   syntax sync fromstart
 endfunction
 
@@ -33,6 +44,13 @@ function! s:goimports()
   let l:file = expand('%')
   let l:cmd = printf('goimports -d -srcdir %s', shellescape(l:file))
   let l:out = system(l:cmd, join(s:getlines(), "\n"))
+  let l:err = v:shell_error
+  return [l:out, l:err]
+endfunction
+
+function! s:gofmt_s()
+  let l:file = expand('%')
+  let l:out = system('gofmt -s -d', join(s:getlines(), "\n"))
   let l:err = v:shell_error
   return [l:out, l:err]
 endfunction
