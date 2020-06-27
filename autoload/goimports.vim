@@ -1,9 +1,13 @@
 " vint: -ProhibitUnusedVariable
 
-function! goimports#Run() abort
+function! goimports#AutoRun() abort
   if !get(g:, 'goimports', 1)
     return
   endif
+  call goimports#Run()
+endfunction
+
+function! goimports#Run() abort
   if !executable('goimports')
     call s:error('goimports executable not found')
     return
