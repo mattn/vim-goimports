@@ -31,9 +31,9 @@ Plug 'mattn/vim-goimports'
 ## Configuration
 
 ```viml
-" enable (default)
+" enable auto format when write (default)
 let g:goimports = 1
-" disable
+" disable auto format. but :GoImportRun will work.
 let g:goimports = 0
 ```
 
