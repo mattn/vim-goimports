@@ -93,6 +93,8 @@ function! s:apply_diff(diff, lnum) abort
   let l:last_lnum = line('$')
   let l:cursor_lnum = a:lnum
   let l:hunks = split(a:diff, "\n@@")
+  let l:delete_lnum = 0
+  let l:delete_loff = 0
   for l:hunk in l:hunks[1 :]
     let l:lines = split(l:hunk, "\n")
     let l:header = remove(l:lines, 0)
@@ -101,19 +103,28 @@ function! s:apply_diff(diff, lnum) abort
       if l:line[0] is# '-'
         call deletebufline(l:bufnr, l:current_lnum)
         let l:last_lnum -= 1
-        if l:current_lnum < l:cursor_lnum
+        let l:delete_lnum += 1
+        if l:delete_loff == 0 && l:current_lnum == l:cursor_lnum
+          let l:delete_loff = l:delete_lnum
+        endif
+        if l:current_lnum <= l:cursor_lnum
           let l:cursor_lnum -= 1
         endif
       elseif l:line[0] is# '+'
         let l:append_lnum = min([l:current_lnum - 1, l:last_lnum])
         call appendbufline(l:bufnr, l:append_lnum, l:line[1 :])
         let l:last_lnum += 1
-        if l:current_lnum < l:cursor_lnum
+        if l:current_lnum <= l:cursor_lnum + l:delete_loff
           let l:cursor_lnum += 1
+          if l:delete_loff > 0
+            let l:delete_loff -= 1
+          endif
         endif
         let l:current_lnum += 1
       else
         let l:current_lnum += 1
+        let l:delete_lnum = 0
+        let l:delete_loff = 0
       endif
     endfor
   endfor
