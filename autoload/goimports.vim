@@ -139,9 +139,7 @@ function! s:getlines()
   if &l:endofline || (&l:fixendofline && !&l:binary)
     call add(l:buf, '')
   endif
-  if &l:fileformat ==# 'dos'
-    call map(l:buf, 'v:val."\r"')
-  endif
+  " goimports assumes source file have LF only as EOL
   return l:buf
 endfunction
 
