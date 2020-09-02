@@ -43,6 +43,10 @@ endfunction
 function! s:goimports()
   let l:file = expand('%')
   let l:cmd = printf('goimports -d -srcdir %s', shellescape(l:file))
+  let l:local = get(g:, 'goimports_local', '')
+  if l:local != ''
+    let l:cmd .= printf(' -local "%s"', l:local)
+  endif
   let l:out = system(l:cmd, join(s:getlines(), "\n"))
   let l:err = v:shell_error
   return [l:out, l:err]

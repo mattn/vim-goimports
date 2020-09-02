@@ -47,6 +47,14 @@ let g:goimports = 0
     unlet! g:goimports_simplify
     ```
 
+* `g:goimports_local` - use `-local` option when running `goimports`.
+  This is useful to import closed-source packages. (comma separated list)
+
+    ```viml
+    " run goimports with `-local "github.com/myrepo"` option
+    let g:goimports_local = 'github.com/myrepo'
+    ```
+
 ## Requirements
 
 * goimports
