@@ -29,7 +29,7 @@ function! goimports#Run() abort
     endif
     call s:reset_errors()
     if empty(l:out)
-      return
+      continue
     endif
     let l:curpos[1] = s:apply_diff(l:out, l:curpos[1])
   endfor
