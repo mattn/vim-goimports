@@ -7,6 +7,62 @@ function! goimports#AutoRun() abort
   call goimports#Run()
 endfunction
 
+if exists('*appendbufline')
+  function! s:appendbufline(expr, lnum, text) abort
+    return appendbufline(a:expr, a:lnum, a:text)
+  endfunction
+  function! s:deletebufline(expr, first, ...) abort
+    return call('deletebufline', [a:expr, a:first] + a:000)
+  endfunction
+else
+  function! s:appendbufline(expr, lnum, text) abort
+    let l:curr_bufnr = bufnr('%')
+    if l:curr_bufnr == a:expr
+      return append(a:lnum, a:text)
+    endif
+    try
+      execute printf('noautocmd keepalt keepjumps silent %sbuffer', a:expr)
+      return append(a:lnum, a:text)
+    catch /.*/
+      echomsg string({ 'exception': v:exception, 'throwpoint': v:throwpoint })
+    finally
+      execute printf('noautocmd keepalt keepjumps silent %sbuffer', l:curr_bufnr)
+    endtry
+  endfunction
+  function! s:deletebufline(expr, first, ...) abort
+    let l:curr_bufnr = bufnr('%')
+    if l:curr_bufnr == a:expr
+      try
+        if len(a:000) > 0
+          call execute(printf('%d,%ddelete', a:first, a:000[0]))
+        else
+          call execute(printf('%ddelete', a:first))
+        endif
+        return 0
+      catch
+      endtry
+      return 1
+    endif
+    try
+      execute printf('noautocmd keepalt keepjumps silent %sbuffer', a:expr)
+      try
+        if len(a:000) > 0
+          call execute(printf('%d,%ddelete', a:first, a:000[0]))
+        else
+          call execute(printf('%ddelete', a:first))
+        endif
+        return 0
+      catch
+      endtry
+      return 1
+    catch /.*/
+      echomsg string({ 'exception': v:exception, 'throwpoint': v:throwpoint })
+    finally
+      execute printf('noautocmd keepalt keepjumps silent %sbuffer', l:curr_bufnr)
+    endtry
+  endfunction
+endif
+
 function! goimports#Run() abort
   if !executable('goimports')
     call s:error('goimports executable not found')
@@ -105,7 +161,7 @@ function! s:apply_diff(diff, lnum) abort
     let l:current_lnum = str2nr(matchstr(l:header, '+\zs\d\+'))
     for l:line in l:lines
       if l:line[0] is# '-'
-        call deletebufline(l:bufnr, l:current_lnum)
+        call s:deletebufline(l:bufnr, l:current_lnum)
         let l:last_lnum -= 1
         let l:delete_lnum += 1
         if l:delete_loff == 0 && l:current_lnum == l:cursor_lnum
@@ -116,7 +172,7 @@ function! s:apply_diff(diff, lnum) abort
         endif
       elseif l:line[0] is# '+'
         let l:append_lnum = min([l:current_lnum - 1, l:last_lnum])
-        call appendbufline(l:bufnr, l:append_lnum, l:line[1 :])
+        call s:appendbufline(l:bufnr, l:append_lnum, l:line[1 :])
         let l:last_lnum += 1
         if l:current_lnum <= l:cursor_lnum + l:delete_loff
           let l:cursor_lnum += 1
