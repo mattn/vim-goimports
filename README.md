@@ -55,6 +55,18 @@ let g:goimports = 0
     let g:goimports_local = 'github.com/myrepo'
     ```
 
+* To replace goimports command with the drop in replacement tool (e.g. [gofumpt](https://github.com/mvdan/gofumpt)).
+
+  ```viml
+  " goimport (default)
+  let g:goimports_cmd = 'goimports'
+  let g:goimports_simplify_cmd = 'gofmt'
+  
+  " gofumpt
+  let g:goimports_cmd = 'gofumports'
+  let g:goimports_simplify_cmd = 'gofumpt'
+  ```
+
 ## Requirements
 
 * goimports

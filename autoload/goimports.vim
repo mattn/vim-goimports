@@ -1,5 +1,15 @@
 " vint: -ProhibitUnusedVariable
 
+let s:goimports_cmd = 'goimports'
+if exists('g:goimports_cmd')
+  let s:goimports_cmd = g:goimports_cmd
+endif
+
+let s:goimports_simplify_cmd = 'gofmt'
+if exists('g:goimports_simplify_cmd')
+  let s:goimports_simplify_cmd = g:goimports_simplify_cmd
+endif
+
 function! goimports#AutoRun() abort
   if !get(g:, 'goimports', 1)
     return
@@ -64,7 +74,7 @@ else
 endif
 
 function! goimports#Run() abort
-  if !executable('goimports')
+  if !executable(s:goimports_cmd)
     call s:error('goimports executable not found')
     return
   endif
@@ -98,7 +108,7 @@ endfunction
 
 function! s:goimports()
   let l:file = expand('%')
-  let l:cmd = printf('goimports -d -srcdir %s', shellescape(l:file))
+  let l:cmd = printf('%s -d -srcdir %s', s:goimports_cmd, shellescape(l:file))
   let l:local = get(g:, 'goimports_local', '')
   if l:local != ''
     let l:cmd .= printf(' -local "%s"', l:local)
@@ -110,7 +120,8 @@ endfunction
 
 function! s:gofmt_s()
   let l:file = expand('%')
-  let l:out = system('gofmt -s -d', join(s:getlines(), "\n"))
+  let l:cmd = printf('%s -s -d', s:goimports_simplify_cmd)
+  let l:out = system(l:cmd, join(s:getlines(), "\n"))
   let l:err = v:shell_error
   return [l:out, l:err]
 endfunction
