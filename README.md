@@ -67,6 +67,12 @@ let g:goimports = 0
   let g:goimports_simplify_cmd = 'gofumpt'
   ```
 
+* To not trigger the location list if errors are present, you can use this option :
+  ```viml
+  " default is 1
+  let g:goimports_show_loclist = 0
+  ```
+
 ## Requirements
 
 * goimports

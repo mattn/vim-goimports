@@ -10,6 +10,11 @@ if exists('g:goimports_simplify_cmd')
   let s:goimports_simplify_cmd = g:goimports_simplify_cmd
 endif
 
+let s:goimports_show_loclist = 1
+if exists('g:goimports_show_loclist')
+  let s:goimports_show_loclist = g:goimports_show_loclist
+endif
+
 function! goimports#AutoRun() abort
   if !get(g:, 'goimports', 1)
     return
@@ -89,7 +94,7 @@ function! goimports#Run() abort
 
   for f in l:filters
     let [l:out, l:err] = function(f)()
-    if l:err != 0
+    if l:err != 0 && s:goimports_show_loclist == 1
       call s:handle_errors(expand('%'), l:out)
       return
     endif
