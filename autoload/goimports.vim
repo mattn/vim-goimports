@@ -89,7 +89,7 @@ function! goimports#Run() abort
 
   for f in l:filters
     let [l:out, l:err] = function(f)()
-    if l:err != 0
+    if l:err != 0 && get(g:, 'goimports_show_loclist', 1)
       call s:handle_errors(expand('%'), l:out)
       return
     endif
