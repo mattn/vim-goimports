@@ -234,6 +234,12 @@ function! goimports#Complete(lead, cmdline, pos) abort
       endfor
     endfor
   endfor
+  let l:gosub = fnamemodify(findfile("go.sum", ".;"), ':p')
+  if filereadable(l:gosub)
+    for l:mod in filter(uniq(sort(map(readfile(l:gosub), 'split(v:val, " ")[0]'))), 'stridx(v:val, a:lead) ==# 0')
+      let l:ret[l:mod] = 1
+    endfor
+  endif
   return sort(keys(l:ret))
 endfunction
 
