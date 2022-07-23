@@ -238,13 +238,18 @@ function! goimports#Complete(lead, cmdline, pos) abort
   if filereadable(l:gomod)
     let l:mod = filter(readfile(l:gomod), 'v:val =~# "^module \\S\\+"')
     if !empty(l:mod)
-      let l:ret[split(l:mod[0], '\s\+')[1]] = 1
+      let l:mod = split(l:mod[0], '\s\+')[1]
+      if stridx(l:mod, a:lead) == 0
+        let l:ret[l:mod] = 1
+      endif
     endif
   endif
   let l:gosum = fnamemodify(findfile("go.sum", fnamemodify(bufname('.'), ':p:gs!\!/!') . ';'), ':p')
   if filereadable(l:gosum)
     for l:mod in filter(uniq(sort(map(readfile(l:gosum), 'split(v:val, " ")[0]'))), 'stridx(v:val, a:lead) ==# 0')
-      let l:ret[l:mod] = 1
+      if stridx(l:mod, a:lead) == 0
+        let l:ret[l:mod] = 1
+      endif
     endfor
   endif
   return sort(keys(l:ret))
