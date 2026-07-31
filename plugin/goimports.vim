@@ -1,4 +1,7 @@
 function! s:install()
+  if !executable('go')
+    return
+  endif
   if get(g:, 'goimports_autoformat', 1)
     augroup goimports_autoformat
       au! * <buffer>
